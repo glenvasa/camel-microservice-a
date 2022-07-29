@@ -1,12 +1,17 @@
 package com.glenvasa.microservices.camelmicroservicea.routes.a;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @Component
 public class MyFirstTimerRouter extends RouteBuilder {
+
+    @Autowired
+    private GetCurrentTimeBean getCurrentTimeBean;
+
 
     // create routes
     @Override
@@ -22,7 +27,8 @@ public class MyFirstTimerRouter extends RouteBuilder {
         // timer endpoint
         from("timer:first-timer")
 //                .transform().constant("My Constant Message")
-                .transform().constant("Time is now: " + LocalDateTime.now())
+//                .transform().constant("Time is now: " + LocalDateTime.now()) // each message has same time b/c it is constant
+                .bean(getCurrentTimeBean, "getCurrentTime") // spring bean used for transformation. Bean is invoked each time a message created, so we get new updated time for each new message.
                 .to("log:first-timer");
     }
 
@@ -30,5 +36,9 @@ public class MyFirstTimerRouter extends RouteBuilder {
 
 @Component
 class GetCurrentTimeBean {
-    
+
+    public String getCurrentTime(){
+        return "Time is now: " + LocalDateTime.now();
+    }
+
 }
